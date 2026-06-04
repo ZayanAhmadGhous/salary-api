@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+
+  api:
+    build: .
+    container_name: ml_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
