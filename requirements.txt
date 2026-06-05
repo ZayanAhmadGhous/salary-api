@@ -4,3 +4,5 @@ numpy
 scikit-learn
 redis
 pytest
+httpx2
+httpx
