@@ -28,3 +28,7 @@ jobs:
       - name: Run Tests
         run: |
           pytest
+
+      - name: Build Docker image
+        run: |
+          docker build -t salary_api
