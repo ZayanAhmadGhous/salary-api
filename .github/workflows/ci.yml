@@ -1,7 +1,11 @@
-name: First CI Pipeline
+name: MLOps CI Pipeline
 
 on:
   push:
+    branches:
+      - main
+
+  pull_request:
     branches:
       - main
 
@@ -29,6 +33,22 @@ jobs:
         run: |
           pytest
 
-      - name: Build Docker image
+      - name: Read Secret
         run: |
-          docker build -t salary_api .
+          echo "User is ${{ secrets.MY_NAME }}"
+
+
+  docker-build:
+
+    runs-on: ubuntu-latest
+
+    needs: test
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build -t salary-api .

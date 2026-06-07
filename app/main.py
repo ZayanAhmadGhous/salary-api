@@ -31,10 +31,9 @@ def home():
 @app.post("/predict")
 def predict(age: int, hours: int, exp: int):
 
-    # 🔥 1. Create cache key
     key = f"{age}:{hours}:{exp}"
 
-    # 🔥 2. Check cache first
+
     cached_result = cache.get(key)
     if cached_result:
         return {
@@ -42,11 +41,11 @@ def predict(age: int, hours: int, exp: int):
             "prediction": json.loads(cached_result)
         }
 
-    # 🔥 3. If not in cache → run model
+
     input_data = np.array([[age, hours, exp]])
     prediction = model.predict(input_data)[0]
 
-    # 🔥 4. Save to cache
+
     cache.set(key, json.dumps(float(prediction)))
 
     return {
