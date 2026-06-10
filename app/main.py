@@ -1,54 +1,66 @@
 from fastapi import FastAPI
+from pathlib import Path
+from pydantic import BaseModel
 import pickle
 import numpy as np
 import redis
 import json
 import os
 
-
-
 app = FastAPI()
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+# -------------------------
+# Model loading (once only)
+# -------------------------
+MODEL_PATH = Path(__file__).parent / "salary_model.pkl"
 
-cache = redis.Redis(
-    host=REDIS_HOST,
-    port=6379,
-    decode_responses=True
-)
-
-
-# Load ML model
-with open("app/salary_model.pkl", "rb") as f:
+with open(MODEL_PATH, "rb") as f:
     model = pickle.load(f)
 
 
+class Data(BaseModel):
+    age: int
+    hours: int
+    exp: int
+
+
+# -------------------------
+# Redis (lazy initialization)
+# -------------------------
+
+
+def get_cache():
+    return redis.Redis(
+        host=os.getenv("REDIS_HOST", "localhost"), port=6379, decode_responses=True
+    )
+
+
+# -------------------------
+# Routes
+# -------------------------
 @app.get("/")
 def home():
     return {"message": "ML API running with Redis + Docker Compose"}
 
 
 @app.post("/predict")
-def predict(age: int, hours: int, exp: int):
+def predict(data: Data):
 
-    key = f"{age}:{hours}:{exp}"
+    cache = get_cache()
+    key = f"{data.age}:{data.hours}:{data.exp}"
 
-
+    # Check cache
     cached_result = cache.get(key)
     if cached_result:
-        return {
-            "source": "cache",
-            "prediction": json.loads(cached_result)
-        }
+        return {"source": "cache", "prediction": json.loads(cached_result)}
 
-
-    input_data = np.array([[age, hours, exp]])
+    # ML prediction
+    input_data = np.array([[data.age, data.hours, data.exp]])
     prediction = model.predict(input_data)[0]
 
+    result = float(prediction)
 
-    cache.set(key, json.dumps(float(prediction)))
+    # Store in cache
+    cache.set(key, json.dumps(result))
 
-    return {
-        "source": "model",
-        "prediction": float(prediction)
-    }
+    return {"source": "model", "prediction": result}
