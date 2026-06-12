@@ -29,6 +29,14 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Run Flake8
+        run: |
+          flake8 .
+
+      - name: Run Black Check
+        run: |
+          black --check .
+
       - name: Run Tests
         run: |
           pytest
@@ -36,7 +44,6 @@ jobs:
       - name: Read Secret
         run: |
           echo "User is ${{ secrets.MY_NAME }}"
-
 
   docker-build:
 

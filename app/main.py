@@ -9,9 +9,7 @@ import os
 
 app = FastAPI()
 
-# -------------------------
-# Model loading (once only)
-# -------------------------
+
 MODEL_PATH = Path(__file__).parent / "salary_model.pkl"
 
 with open(MODEL_PATH, "rb") as f:
@@ -23,25 +21,14 @@ class Data(BaseModel):
     hours: int
     exp: int
 
-
-# -------------------------
-# Redis (lazy initialization)
-# -------------------------
-
-
 def get_cache():
     return redis.Redis(
         host=os.getenv("REDIS_HOST", "localhost"), port=6379, decode_responses=True
     )
 
-
-# -------------------------
-# Routes
-# -------------------------
 @app.get("/")
 def home():
     return {"message": "ML API running with Redis + Docker Compose"}
-
 
 @app.post("/predict")
 def predict(data: Data):
