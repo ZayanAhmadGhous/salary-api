@@ -21,14 +21,19 @@ class Data(BaseModel):
     hours: int
     exp: int
 
+
 def get_cache():
     return redis.Redis(
-        host=os.getenv("REDIS_HOST", "localhost"), port=6379, decode_responses=True
+        host=os.getenv("REDIS_HOST", "localhost"),
+        port=6379,
+        decode_responses=True
     )
+
 
 @app.get("/")
 def home():
     return {"message": "ML API running with Redis + Docker Compose"}
+
 
 @app.post("/predict")
 def predict(data: Data):
