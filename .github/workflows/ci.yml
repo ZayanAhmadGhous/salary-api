@@ -10,13 +10,10 @@ on:
       - main
 
 jobs:
-
   test:
-
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -41,21 +38,23 @@ jobs:
         run: |
           pytest
 
-      - name: Read Secret
-        run: |
-          echo "User is ${{ secrets.MY_NAME }}"
-
-  docker-build:
-
+  docker-publish:
     runs-on: ubuntu-latest
-
     needs: test
 
     steps:
-
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build Docker Image
-        run: |
-          docker build -t salary-api .
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.Docker_username }}
+          password: ${{ secrets.Docker_token }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: zayanahmad123/salary-api:latest
